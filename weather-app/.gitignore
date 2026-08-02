@@ -1,0 +1,66 @@
+# ======================
+# Environment variables
+# ======================
+.env
+.env.local
+.env.*
+
+# Keep an example env file
+!.env.example
+
+# ======================
+# Go
+# ======================
+bin/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+
+# Air (hot reload)
+tmp/
+
+# Go workspace
+go.work
+go.work.sum
+
+# ======================
+# Node / React
+# ======================
+frontend/node_modules/
+
+# React build output
+frontend/build/
+frontend/dist/
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ======================
+# IDEs
+# ======================
+.vscode/
+.idea/
+
+# ======================
+# macOS
+# ======================
+.DS_Store
+
+# ======================
+# Windows
+# ======================
+Thumbs.db
+
+# ======================
+# Misc
+# ======================
+*.log
