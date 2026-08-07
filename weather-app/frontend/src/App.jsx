@@ -27,7 +27,7 @@ export default function App() {
       <h1>Weather Dashboard</h1>
       <SearchBar onSearch={handleSearch} loading={loading} />
       {error && <p className="error">{error}</p>}
-      <WeatherCard weather={weather} />
+      <WeatherCard key={weather?.name} weather={weather} />
     </div>
   )
 }

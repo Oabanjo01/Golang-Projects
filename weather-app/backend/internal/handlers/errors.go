@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 )
 
@@ -12,6 +13,7 @@ type AppError struct {
 
 // Parses it to a JSON format for the client to understand and sends it back to the client.
 func ErrorHandler(w http.ResponseWriter, statusCode int, errorMessage string) {
+	slog.Error("Request failed", "status", statusCode, "message", errorMessage)
 	w.Header().Set("Content-Type", "application/json")
 
 	// I am done setting up the response headers, send them out over the network now."

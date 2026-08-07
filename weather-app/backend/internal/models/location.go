@@ -6,7 +6,14 @@ type Location struct {
 	Lat        float64           `json:"lat"`
 	Lon        float64           `json:"lon"`
 	Country    string            `json:"country"`
-	State      string            `json:"state"`
+}
+
+type LocationRequest struct {
+	Name      string  `json:"name"`
+	Lat       float64 `json:"lat"`
+	Lon       float64 `json:"lon"`
+	Country   string  `json:"country"`
+	CreatedAt string  `json:"created_at"`
 }
 
 type LocationResponse []Location

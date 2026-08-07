@@ -75,3 +75,19 @@
   font-size: 0.9rem;
   color: #cbd5e1;
 }
+
+.save-button {
+  margin-top: 1.25rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  border: none;
+  background: #38bdf8;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -20,6 +20,7 @@ func GetWeather(w http.ResponseWriter, r *http.Request) {
 	}
 
 	locationData, err, statusCode := weather.GetCoordinates(city, apiKey)
+	fmt.Println("locationData:", locationData)
 	if err != nil {
 		ErrorHandler(w, statusCode, fmt.Sprintf("Could not get coordinates for city %s: %v", city, err))
 		return

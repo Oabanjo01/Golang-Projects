@@ -1,0 +1,280 @@
+basePath: /
+definitions:
+  models.ForecastResponse:
+    properties:
+      city:
+        properties:
+          coord:
+            properties:
+              lat:
+                type: number
+              lon:
+                type: number
+            type: object
+          country:
+            type: string
+          id:
+            type: integer
+          name:
+            type: string
+          sunrise:
+            type: integer
+          sunset:
+            type: integer
+          timezone:
+            type: integer
+        type: object
+      cnt:
+        type: integer
+      cod:
+        type: string
+      list:
+        items:
+          properties:
+            clouds:
+              properties:
+                all:
+                  type: integer
+              type: object
+            dt:
+              type: integer
+            dt_txt:
+              type: string
+            main:
+              properties:
+                feels_like:
+                  type: number
+                humidity:
+                  type: integer
+                pressure:
+                  type: integer
+                temp:
+                  type: number
+                temp_max:
+                  type: number
+                temp_min:
+                  type: number
+              type: object
+            pop:
+              type: number
+            weather:
+              items:
+                properties:
+                  description:
+                    type: string
+                  icon:
+                    type: string
+                  id:
+                    type: integer
+                  main:
+                    type: string
+                type: object
+              type: array
+            wind:
+              properties:
+                deg:
+                  type: integer
+                speed:
+                  type: number
+              type: object
+          type: object
+        type: array
+      message:
+        type: integer
+    type: object
+  models.LocationRequest:
+    properties:
+      country:
+        type: string
+      created_at:
+        type: string
+      lat:
+        type: number
+      lon:
+        type: number
+      name:
+        type: string
+    type: object
+  models.WeatherResponse:
+    properties:
+      base:
+        type: string
+      clouds:
+        properties:
+          all:
+            type: integer
+        type: object
+      cod:
+        type: integer
+      coord:
+        properties:
+          lat:
+            type: number
+          lon:
+            type: number
+        type: object
+      dt:
+        type: integer
+      id:
+        type: integer
+      main:
+        properties:
+          feels_like:
+            type: number
+          humidity:
+            type: integer
+          pressure:
+            type: integer
+          temp:
+            type: number
+          temp_max:
+            type: number
+          temp_min:
+            type: number
+        type: object
+      name:
+        type: string
+      sys:
+        properties:
+          country:
+            type: string
+          id:
+            type: integer
+          sunrise:
+            type: integer
+          sunset:
+            type: integer
+          type:
+            type: integer
+        type: object
+      timezone:
+        type: integer
+      visibility:
+        type: integer
+      weather:
+        items:
+          properties:
+            description:
+              type: string
+            icon:
+              type: string
+            iconUrl:
+              type: string
+            id:
+              type: integer
+            main:
+              type: string
+          type: object
+        type: array
+      wind:
+        properties:
+          deg:
+            type: integer
+          speed:
+            type: number
+        type: object
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Weather * saved-locations API
+  title: Waether App Api
+  version: "1.0"
+paths:
+  /api/forecast/{lat}/{lon}:
+    get:
+      parameters:
+      - description: Latitude
+        in: path
+        name: lat
+        required: true
+        type: string
+      - description: Longitude
+        in: path
+        name: lon
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ForecastResponse'
+        "400":
+          description: lat/lon is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: upstream or server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get weather forecast
+      tags:
+      - weather
+  /api/locations:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Location to save
+        in: body
+        name: location
+        required: true
+        schema:
+          $ref: '#/definitions/models.LocationRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Save a location
+      tags:
+      - locations
+  /api/weather/{city}:
+    get:
+      parameters:
+      - description: City name
+        in: path
+        name: city
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WeatherResponse'
+        "400":
+          description: city is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: city not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: upstream or server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get current weather
+      tags:
+      - weather
+swagger: "2.0"
