@@ -117,10 +117,15 @@ func main() {
 	http.Handle("/swagger/", httpSwagger.WrapHandler)
 	http.HandleFunc("GET /api/weather/{city}", handlers.GetWeather)
 	http.HandleFunc("GET /api/forecast/{lat}/{lon}", handlers.GetForecast)
+	http.HandleFunc("GET /api/locations", func(w http.ResponseWriter, r *http.Request) {
+		handlers.GetSavedLocations(db, w, r)
+	})
 	http.HandleFunc("POST /api/locations", func(w http.ResponseWriter, r *http.Request) {
 		handlers.AddLocation(db, w, r)
 	})
+	http.HandleFunc("DELETE /api/locations/{id}", handlers.RemoveLocation(db))
 
 	fmt.Println("Server starting on http://localhost:8080")
-	http.ListenAndServe(":8080", loggers.WithLogging(http.DefaultServeMux))
+	err3 := http.ListenAndServe(":8080", loggers.WithLogging(http.DefaultServeMux))
+	log.Fatal(err3)
 }

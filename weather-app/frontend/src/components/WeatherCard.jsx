@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { saveLocation } from '../api.js'
 
-export default function WeatherCard({ weather: data }) {
+export default function WeatherCard({ weather: data, onSaved }) {
   const [saveState, setSaveState] = useState('idle') // idle | saving | saved | error
   const [saveError, setSaveError] = useState(null)
 
@@ -21,6 +21,7 @@ export default function WeatherCard({ weather: data }) {
         country: sys?.country ?? '',
       })
       setSaveState('saved')
+      onSaved?.()
     } catch (err) {
       setSaveState('error')
       setSaveError(err.message)

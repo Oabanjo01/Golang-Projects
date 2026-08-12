@@ -91,3 +91,71 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.saved-locations {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.saved-locations h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+}
+
+.saved-locations ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.saved-locations li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+}
+
+.saved-location-name {
+  font-weight: 600;
+}
+
+.saved-location-coords {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-left: auto;
+}
+
+.delete-button {
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #7f1d1d;
+  background: transparent;
+  color: #f87171;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-button:hover:not(:disabled) {
+  background: #7f1d1d;
+  color: #fee2e2;
+}
+
+.delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.saved-locations-empty {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
