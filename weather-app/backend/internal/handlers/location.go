@@ -64,7 +64,7 @@ func GetSavedLocations(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(locations)
+	json.NewEncoder(w).Encode(locations) // check
 }
 
 func RemoveLocation(db *sql.DB) http.HandlerFunc {
