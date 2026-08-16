@@ -1,24 +1,27 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"net/http"
-	"os"
+	"uptime_monitor/internal/database"
 )
 
 func main() {
 
 	mux := http.NewServeMux()
 
-	dbURL := os.Getenv("DATABASE_URL")
+	conn, dbErr := database.NewPool(context.Background())
 
-	fmt.Println("dbURL:", dbURL)
+	if dbErr != nil {
+		log.Fatalf("An error occurred creating a new pool %s", dbErr)
+	}
+
+	defer conn.Close()
 
 	err := http.ListenAndServe(":8080", mux)
 
 	if err != nil {
-		fmt.Println("Hello")
 		log.Fatal(err)
 	}
 }

@@ -11,7 +11,7 @@ This is a **learning project**. Every decision below is annotated with *why* —
 | Decision | Choice | Rationale |
 | --- | --- | --- |
 | Auth in Week 1 | Email/password + JWT only | Google OAuth deferred to Week 3. Password auth teaches bcrypt, JWT signing, cookies, and middleware. OAuth adds a redirect dance and a second identity path on top of plumbing that isn't proven yet. |
-| Postgres driver | `database/sql` + `pgx/v5/stdlib` | Hand-written SQL, `rows.Scan`, prepared statements, pool tuning — the Week 1 learning goals. `lib/pq` is in maintenance mode; pgx is the maintained standard. Using it through `database/sql` keeps the stdlib interface you want to learn. |
+| Postgres driver | Native `pgx/v5` + `pgxpool` | Hand-written SQL, typed scanning via `pgx.RowToStructByName`, and a real connection pool — the Week 1 learning goals, on the interface pgx is actually designed around. `lib/pq` is in maintenance mode. Originally planned as `database/sql` + the `pgx/v5/stdlib` adapter for the familiar stdlib interface, but the adapter layer buys nothing once you're using pgx directly — see §4.1a. |
 | Backend pattern | Layered + dependency struct | `handler → service → repository`. An `Application` struct holds deps; handlers are methods on it. Phase 2's worker pool reuses the repository layer instead of duplicating SQL. |
 | Frontend stack | Vite + TS + TanStack Query + Tailwind | This app is ~95% server state with live polling. TanStack Query handles caching/polling/refetch natively. No Redux. |
 | Frontend delivery | Interleaved, not a separate phase | See §7 — the original roadmap listed 4 weeks of work for a 3-week project. |
@@ -213,7 +213,7 @@ One monitor at 60s = 1,440 rows/day. Twenty monitors ≈ 10.5M rows/year. Render
 
 ### 3.7 Smaller notes
 
-- **`lib/pq` is in maintenance mode.** Already addressed — using `pgx/v5/stdlib`.
+- **`lib/pq` is in maintenance mode.** Already addressed — using native `pgx/v5` + `pgxpool`.
 - **Status columns had no CHECK constraints.** A typo'd `'DWON'` would have been accepted silently. Now constrained.
 - **`expected_status_code` as a single int** can't express "any 2xx". Fine for now; if you want ranges later, store a small text pattern instead.
 - **No `updated_at`** anywhere. Added.
@@ -232,7 +232,7 @@ uptime_monitor/
 │       └── main.go              # wiring + startup + graceful shutdown only
 ├── internal/
 │   ├── config/                  # env → typed Config struct
-│   ├── database/                # pool setup, migration runner
+│   ├── database/                # pgxpool setup + generic query helpers (see §4.1a)
 │   ├── models/                  # domain structs (User, Monitor, Incident)
 │   ├── repository/              # SQL. Nothing else.
 │   ├── service/                 # business rules. No http, no SQL strings.
@@ -244,6 +244,34 @@ uptime_monitor/
 │   └── 001_init.down.sql
 ├── DESIGN.md
 └── go.mod
+```
+
+### 4.1a Connection pooling — `pgxpool`, not a single `pgx.Conn`
+
+`pgx.Connect` returns one `*pgx.Conn`, which is **not safe for concurrent use** — the pgx docs say this explicitly. `net/http` handles requests concurrently by design, so the moment two requests land at once they race on that single connection. `pgxpool.Pool` hands each caller its own connection for the duration of a query and returns it after, which is what makes it safe under concurrent handlers now and concurrent Phase 2 workers later.
+
+```go
+cfg, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+if err != nil { /* ... */ }
+cfg.MaxConns = 10 // stay under Render free tier's connection cap
+
+pool, err := pgxpool.NewWithConfig(ctx, cfg)
+if err != nil { /* ... */ }
+if err := pool.Ping(ctx); err != nil { /* ... */ }
+```
+
+`*pgxpool.Pool` is what the repository layer holds, not `*pgx.Conn` or `*sql.DB`.
+
+A small generic helper avoids hand-writing `rows.Scan(&m.ID, &m.Name, ...)` per query while keeping one named, typed method per operation — see §4.3 for why the method still needs to be named rather than folded into one universal `Query(sql, args...)` function:
+
+```go
+func QueryMany[T any](ctx context.Context, pool *pgxpool.Pool, sql string, args ...any) ([]T, error) {
+    rows, err := pool.Query(ctx, sql, args...)
+    if err != nil {
+        return nil, err
+    }
+    return pgx.CollectRows(rows, pgx.RowToStructByName[T])
+}
 ```
 
 ### 4.2 The dependency struct
@@ -283,7 +311,7 @@ type MonitorRepository interface {
 | --- | --- | --- |
 | `handlers` | service, models | SQL, business rules |
 | `service` | repository interfaces, models | `http.ResponseWriter`, SQL strings |
-| `repository` | models, `database/sql` | business rules, HTTP |
+| `repository` | models, `pgxpool`, `pgx` | business rules, HTTP |
 
 If you find yourself reaching for `http.Request` inside a service, the logic is in the wrong layer.
 
