@@ -31,3 +31,7 @@ task-tracker/tasks.json
 
 # macOS
 .DS_Store
+
+# uptime_monitor design docs (not meant for version control)
+uptime_monitor/DESIGN.md
+uptime_monitor/FRONTEND_DESIGN_PROMPT.md
