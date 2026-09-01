@@ -19,9 +19,9 @@ export class ApiError extends Error {
   }
 }
 
+/** Matches handlers.ErrorResponse in the Go backend (internal/handlers/errors.go). */
 interface ErrorBody {
-  error?: string
-  message?: string
+  responseMsg?: string
 }
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -47,10 +47,20 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (res.status === 204) return undefined as T
 
   const text = await res.text()
-  const body: unknown = text ? JSON.parse(text) : null
+  // A route the backend hasn't implemented yet (or any non-JSON error page)
+  // 404s with a plain-text body, not JSON — parse defensively rather than
+  // letting a SyntaxError mask the real HTTP status as a crash.
+  let body: unknown = null
+  if (text) {
+    try {
+      body = JSON.parse(text)
+    } catch {
+      body = null
+    }
+  }
 
   if (!res.ok) {
-    const msg = (body as ErrorBody | null)?.error ?? (body as ErrorBody | null)?.message
+    const msg = (body as ErrorBody | null)?.responseMsg
     throw new ApiError(res.status, msg ?? `Request failed (${res.status})`)
   }
 

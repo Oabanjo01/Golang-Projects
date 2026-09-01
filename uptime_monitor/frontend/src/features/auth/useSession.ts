@@ -40,10 +40,12 @@ export function useLogin() {
 }
 
 export function useRegister() {
-  const qc = useQueryClient()
+  // No session-cache write here. RegisterUser doesn't set a cookie — only
+  // Login does — so writing the response into authKeys.session would show the
+  // user as logged in with nothing on the wire to back it up. AuthPage sends
+  // them to the login form instead.
   return useMutation({
     mutationFn: (creds: Credentials) => authApi.register(creds),
-    onSuccess: (user) => qc.setQueryData(authKeys.session, user),
   })
 }
 

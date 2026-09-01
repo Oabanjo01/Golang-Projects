@@ -12,6 +12,9 @@ export function AuthPage() {
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // Set once, right after a successful register, to show a one-line banner on
+  // the login form. Cleared the moment the user acts again so it can't go stale.
+  const [justRegistered, setJustRegistered] = useState(false)
 
   const { isAuthenticated, isLoading } = useSession()
   const login = useLogin()
@@ -23,7 +26,30 @@ export function AuthPage() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
-    active.mutate({ email, password })
+    setJustRegistered(false)
+
+    if (mode === 'register') {
+      // Registering does not log you in — see useRegister. Land back on the
+      // login form with the email carried over, rather than pretending a
+      // session exists when the backend never issued one.
+      register.mutate(
+        { email, password },
+        {
+          onSuccess: () => {
+            setMode('login')
+            setPassword('')
+            setJustRegistered(true)
+          },
+        },
+      )
+    } else {
+      login.mutate({ email, password })
+    }
+  }
+
+  function swapMode() {
+    setJustRegistered(false)
+    setMode(mode === 'login' ? 'register' : 'login')
   }
 
   const copy =
@@ -42,6 +68,15 @@ export function AuthPage() {
         <Panel className="p-[22px]">
           <div className="font-cond text-[22px] font-semibold">{copy.title}</div>
           <div className="mb-[18px] text-[13px] text-muted">{copy.sub}</div>
+
+          {mode === 'login' && justRegistered && (
+            <div
+              role="status"
+              className="mb-3 border border-[var(--up)] bg-[var(--up-tint)] px-3 py-2 text-[13px] text-[var(--up)]"
+            >
+              Account created — sign in to continue.
+            </div>
+          )}
 
           <form onSubmit={onSubmit} className="flex flex-col gap-3">
             <Field
@@ -81,7 +116,7 @@ export function AuthPage() {
             <span className="text-muted">{copy.swap}</span>
             <button
               type="button"
-              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+              onClick={swapMode}
               className="cursor-pointer border-0 bg-transparent p-0 text-[13px] text-accent underline underline-offset-[3px]"
             >
               {copy.swapCta}

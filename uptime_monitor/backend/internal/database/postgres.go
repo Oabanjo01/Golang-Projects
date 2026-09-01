@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -18,9 +17,8 @@ const defaultMaxConnIdleTime = time.Minute * 30
 const defaultHealthCheckPeriod = time.Minute
 const defaultConnectTimeout = time.Second * 5
 
-func NewPool(ctx context.Context) (*pgxpool.Pool, error) {
-	dbConfig, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
-
+func NewPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
+	dbConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
